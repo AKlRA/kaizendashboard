@@ -117,7 +117,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'kaizen_db'),
         'USER': os.getenv('DB_USER', 'kaizen_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'your_password'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
