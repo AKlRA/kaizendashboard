@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableDelayedExpansion
 echo Fixing Kaizen Service...
 echo ====================================
 
@@ -7,36 +8,34 @@ set NSSM_PATH="C:\Program Files\nssm\win64\nssm.exe"
 set PROJECT_PATH="C:\kaizen_project\kaizendashboard"
 set VENV_PATH="%PROJECT_PATH%\venv"
 
-:: Verify waitress installation
-echo Checking waitress installation...
-"%VENV_PATH%\Scripts\python.exe" -c "import waitress" > nul 2>&1
-if errorlevel 1 (
-    echo Installing waitress...
-    "%VENV_PATH%\Scripts\pip.exe" install waitress
-)
+:: Verify Python and waitress
+echo Checking installations...
+"%VENV_PATH%\Scripts\python.exe" -c "import sys; print(sys.executable)"
+"%VENV_PATH%\Scripts\pip.exe" install waitress
 
 :: Stop and remove existing service
 echo Stopping and removing existing service...
-%NSSM_PATH% stop KaizenProject
-%NSSM_PATH% remove KaizenProject confirm
-sc delete KaizenProject
-timeout /t 5 /nobreak > nul
+net stop KaizenProject 2>nul
+%NSSM_PATH% remove KaizenProject confirm 2>nul
+sc delete KaizenProject 2>nul
+timeout /t 10 /nobreak > nul
 
 :: Install service with virtual environment Python
 echo Installing service...
 %NSSM_PATH% install KaizenProject "%VENV_PATH%\Scripts\python.exe"
 
-:: Configure service
+:: Configure service with correct waitress command
 echo Configuring service...
-%NSSM_PATH% set KaizenProject AppParameters "-m waitress.cli --listen=0.0.0.0:8000 kaizen_project.wsgi:application"
+%NSSM_PATH% set KaizenProject AppParameters "-m waitress.cli --listen=*:8000 kaizen_project.wsgi:application"
 %NSSM_PATH% set KaizenProject AppDirectory %PROJECT_PATH%
 %NSSM_PATH% set KaizenProject DisplayName "Ace Kaizen Dashboard"
 %NSSM_PATH% set KaizenProject Description "Ace Kaizen Project Web Application"
 
-:: Set environment variables
-%NSSM_PATH% set KaizenProject AppEnvironmentExtra VIRTUAL_ENV=%VENV_PATH%
-%NSSM_PATH% set KaizenProject AppEnvironmentExtra PATH=%VENV_PATH%\Scripts;%PATH%
-%NSSM_PATH% set KaizenProject AppEnvironmentExtra PYTHONPATH=%PROJECT_PATH%
+:: Set environment variables correctly
+%NSSM_PATH% set KaizenProject AppEnvironmentExtra "VIRTUAL_ENV=%VENV_PATH%"
+%NSSM_PATH% set KaizenProject AppEnvironmentExtra "PATH=%VENV_PATH%\Scripts;%PATH%"
+%NSSM_PATH% set KaizenProject AppEnvironmentExtra "PYTHONPATH=%PROJECT_PATH%"
+%NSSM_PATH% set KaizenProject AppEnvironmentExtra "DJANGO_SETTINGS_MODULE=kaizen_project.settings"
 
 :: Configure logging
 if not exist "%PROJECT_PATH%\logs" mkdir "%PROJECT_PATH%\logs"
@@ -63,8 +62,10 @@ if exist "%PROJECT_PATH%\logs\service.error.log" (
 )
 
 echo.
-echo Service Configuration:
-echo 1. Python Path: %VENV_PATH%\Scripts\python.exe
-echo 2. Project Path: %PROJECT_PATH%
-echo 3. Log Files: %PROJECT_PATH%\logs\
+echo Troubleshooting Steps:
+echo 1. Test waitress manually: "%VENV_PATH%\Scripts\python.exe" -m waitress.cli --listen=*:8000 kaizen_project.wsgi:application
+echo 2. Check logs in: %PROJECT_PATH%\logs\
+echo 3. Run: sc query KaizenProject
 pause
+
+endlocal
