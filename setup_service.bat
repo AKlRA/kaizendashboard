@@ -1,11 +1,21 @@
 @echo off
+setlocal EnableDelayedExpansion
+
 echo Setting up Kaizen Dashboard Service...
 echo ====================================
 
 :: Set paths
-set NSSM_PATH="C:\Program Files\nssm-2.24-101-g897c7ad\win64\nssm.exe"
+set NSSM_PATH="C:\Program Files\nssm\win64\nssm.exe"
 set PROJECT_PATH="C:\Users\Bhuvan\Desktop\work\backup_test\Ace_kaizen_project\kaizen_project"
 set PYTHON_PATH="C:\Python312\python.exe"
+
+:: Get server IP for network access
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
+    set SERVER_IP=%%a
+    set SERVER_IP=!SERVER_IP:~1!
+    goto :found_ip
+)
+:found_ip
 
 :: Verify Python installation
 echo Verifying Python installation...
@@ -25,6 +35,21 @@ if errorlevel 1 (
 
 :: Create logs directory
 if not exist "%PROJECT_PATH%\logs" mkdir "%PROJECT_PATH%\logs"
+
+:: Create/Update .env file
+echo Creating environment configuration...
+(
+echo DEBUG=False
+echo SECRET_KEY=your-secure-secret-key-here
+echo ALLOWED_HOSTS=localhost,127.0.0.1,%SERVER_IP%
+echo.
+echo # Database settings
+echo DB_NAME=kaizen_db
+echo DB_USER=kaizen_user
+echo DB_PASSWORD=your_password_here
+echo DB_HOST=localhost
+echo DB_PORT=3306
+) > "%PROJECT_PATH%\.env"
 
 :: Remove existing service completely
 echo Cleaning up existing service...
@@ -52,13 +77,19 @@ echo Setting up logging...
 %NSSM_PATH% set KaizenProject AppStdout "%PROJECT_PATH%\logs\service.log"
 %NSSM_PATH% set KaizenProject AppStderr "%PROJECT_PATH%\logs\service.error.log"
 
-:: Set environment with system Python path
+:: Set environment variables
 echo Configuring environment...
 %NSSM_PATH% set KaizenProject AppEnvironmentExtra PATH=%PATH%;C:\Python312;C:\Python312\Scripts
 %NSSM_PATH% set KaizenProject AppEnvironmentExtra PYTHONPATH=%PROJECT_PATH%
 %NSSM_PATH% set KaizenProject AppEnvironmentExtra DJANGO_SETTINGS_MODULE=kaizen_project.settings
+%NSSM_PATH% set KaizenProject AppEnvironmentExtra DJANGO_DEBUG=False
 
-:: Start the service with error checking
+:: Configure firewall rule
+echo Setting up firewall rule...
+netsh advfirewall firewall delete rule name="Django Kaizen Server" > nul 2>&1
+netsh advfirewall firewall add rule name="Django Kaizen Server" dir=in action=allow protocol=TCP localport=8000
+
+:: Start the service
 echo Starting service...
 %NSSM_PATH% start KaizenProject
 timeout /t 5 /nobreak > nul
@@ -88,7 +119,13 @@ echo ====================================
 echo Service installed successfully!
 echo Access the application at:
 echo http://localhost:8000
+echo http://%SERVER_IP%:8000
+echo.
+echo Share this URL with other computers on the network:
+echo http://%SERVER_IP%:8000
 
 :end
 echo ====================================
 pause
+
+endlocal

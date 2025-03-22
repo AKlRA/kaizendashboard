@@ -35,14 +35,18 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '172.22.1.17',  # Server IP
+    '*',  # Allow all hosts - BE CAREFUL with this in production
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://172.22.1.17:8000",  # Server address
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 
 # Application definition
