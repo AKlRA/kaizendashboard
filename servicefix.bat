@@ -24,7 +24,7 @@ if not errorlevel 1 (
 
 :: Install service with specific user account
 echo Installing service...
-%NSSM_PATH% install KaizenProject "C:\Python312\python.exe"
+%NSSM_PATH% install KaizenProject "C:\Users\administrator.AMSLINDIA\AppData\Local\Programs\Python\Python313\python.exe"
 %NSSM_PATH% set KaizenProject AppParameters "-m waitress-serve --host=0.0.0.0 --port=8000 kaizen_project.wsgi:application"
 %NSSM_PATH% set KaizenProject AppDirectory %PROJECT_PATH%
 %NSSM_PATH% set KaizenProject DisplayName "Ace Kaizen Dashboard"
