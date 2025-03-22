@@ -1,0 +1,261 @@
+{% extends 'layouts/base-fullscreen.html' %}
+{% load static %}
+{% block title %} Register {% endblock title %}
+<style>
+.password-requirements {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    margin-top: 5px;
+    width: 100%;
+}
+
+.requirement {
+    font-size: 0.875rem;
+    color: #525f7f;
+    margin: 4px 0;
+}
+   </style>
+{% block content %}
+<div class="container mt--8 pb-5">
+   <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+         <div class="card bg-secondary shadow border-0">
+            <div class="card-header bg-transparent pb-5">
+               <div class="text-center">
+                  <h2>Create New Account</h2>
+               </div>
+            </div>
+            <div class="card-body px-lg-5 py-lg-5">
+               <form method="post" id="registerForm">
+                  {% csrf_token %}
+                  <!-- Employee ID -->
+                  <div class="form-group">
+                     <div class="input-group input-group-alternative mb-3">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-badge"></i></span>
+                        </div>
+                        <input type="text" name="employee_id" class="form-control" placeholder="Employee ID" required>
+                     </div>
+                  </div>
+                  <!-- Username -->
+                  <div class="form-group">
+                     <div class="input-group input-group-alternative mb-3">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
+                        </div>
+                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+                     </div>
+                  </div>
+
+                  <!-- Email -->
+                  <div class="form-group">
+                     <div class="input-group input-group-alternative mb-3">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-email-83"></i></span>
+                        </div>
+                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                     </div>
+                  </div>
+
+                  <!-- Password field with only popup requirements -->
+                  <div class="form-group position-relative">
+                     <div class="input-group input-group-alternative">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                        </div>
+                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                     </div>
+                     <div class="password-requirements" id="passwordRequirements">
+                        <div class="requirement">Password must contain:</div>
+                        <div class="requirement">• At least 10 characters</div>
+                        <div class="requirement">• At least one uppercase letter</div>
+                        <div class="requirement">• At least one number</div>
+                        <div class="requirement">• At least one special character (!@#$%^&*(),.?":{}|<>)</div>
+                     </div>
+                  </div>
+
+                  <!-- Confirm Password field - simplified -->
+                  <div class="form-group">
+                     <div class="input-group input-group-alternative">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                        </div>
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+                     </div>
+                  </div>
+                  <!-- Role Selection -->
+                  <div class="form-group">
+                     <div class="input-group input-group-alternative">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-single-02"></i></span>
+                        </div>
+                        <select name="user_type" id="userType" class="form-control" required>
+                           <option value="">Select Role</option>
+                           <option value="employee">Employee</option>
+                           <option value="hod">HOD</option>
+                           <option value="coordinator">Coordinator</option>
+                           <option value="hod_coordinator">HOD Coordinator</option>
+                           <option value="finance">Finance</option>
+                        </select>
+                     </div>
+                  </div>
+                  <!-- Department Selection -->
+                  <div class="form-group" id="departmentGroup">
+                     <div class="input-group input-group-alternative">
+                        <div class="input-group-prepend">
+                           <span class="input-group-text"><i class="ni ni-building"></i></span>
+                        </div>
+                        <select name="department" id="department" class="form-control">
+                           <option value="">Select Department</option>
+                           {% for dept in departments %}
+                           <option value="{{ dept }}">{{ dept }}</option>
+                           {% endfor %}
+                        </select>
+                     </div>
+                  </div>
+                  <!-- Error Messages -->
+                  <div id="errorMessages" class="text-danger text-center mb-3"></div>
+                  <div class="text-center">
+                     <button type="submit" class="btn btn-maroon my-4">Create Account</button>
+                  </div>
+               </form>
+            </div>
+         </div>
+         <div class="row mt-3">
+            <div class="col-6">
+               <a href="{% url 'login' %}" class="text-light">
+               <small>Already have an account? Login</small>
+               </a>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+{% endblock content %}
+{% block javascripts %}
+{{ block.super }}
+<script>
+   // Password validation function
+   function validatePassword(password) {
+       const requirements = {
+           minLength: password.length >= 10,
+           hasUpperCase: /[A-Z]/.test(password),
+           hasNumber: /[0-9]/.test(password),
+           hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+       };
+       
+       const errors = [];
+       if (!requirements.minLength) errors.push("Must be at least 10 characters long");
+       if (!requirements.hasUpperCase) errors.push("Must contain an uppercase letter");
+       if (!requirements.hasNumber) errors.push("Must contain a number");
+       if (!requirements.hasSpecial) errors.push("Must contain a special character");
+       
+       return {
+           isValid: Object.values(requirements).every(Boolean),
+           errors: errors,
+           requirements: requirements
+       };
+   }
+
+   // Keep existing userType change handler
+   // Update the userType change handler
+   document.getElementById('userType').addEventListener('change', function() {
+      const departmentGroup = document.getElementById('departmentGroup');
+      const departmentSelect = document.getElementById('department');
+      
+      // Add hod_coordinator to the list of roles that need department
+      if (this.value === 'employee' || this.value === 'hod' || this.value === 'hod_coordinator') {
+         departmentGroup.style.display = 'block';
+         departmentSelect.required = true;
+      } else {
+         departmentGroup.style.display = 'none';
+         departmentSelect.required = false;
+         departmentSelect.value = '';
+      }
+   });
+
+   document.querySelector('input[name="password"]').addEventListener('focus', function() {
+      document.getElementById('passwordRequirements').style.display = 'block';
+   });
+
+   document.querySelector('input[name="password"]').addEventListener('blur', function() {
+      setTimeout(() => {
+         if (!document.getElementById('passwordRequirements').matches(':hover')) {
+               document.getElementById('passwordRequirements').style.display = 'none';
+         }
+      }, 100);
+   });
+
+   document.getElementById('passwordRequirements').addEventListener('mouseleave', function() {
+      if (!document.querySelector('input[name="password"]').matches(':focus')) {
+         this.style.display = 'none';
+      }
+   });
+
+   // Real-time password validation
+   document.querySelector('input[name="password"]').addEventListener('input', function() {
+       const errorDiv = document.getElementById('errorMessages');
+       const validation = validatePassword(this.value);
+       
+       if (!validation.isValid) {
+           errorDiv.innerHTML = validation.errors.map(error => `<div>⚠️ ${error}</div>`).join('');
+       } else {
+           errorDiv.innerHTML = '<div class="text-success">✓ Password meets all requirements</div>';
+       }
+   });
+
+   // Updated form submission handler
+   document.getElementById('registerForm').addEventListener('submit', async function(e) {
+       e.preventDefault();
+       const errorDiv = document.getElementById('errorMessages');
+       errorDiv.innerHTML = '';
+
+       // Password validation
+       const password = this.password.value;
+       const confirmPassword = this.confirm_password.value;
+       
+       // Check password strength
+       const validation = validatePassword(password);
+       if (!validation.isValid) {
+           errorDiv.innerHTML = validation.errors.map(error => `<div>⚠️ ${error}</div>`).join('');
+           return;
+       }
+       
+       // Check password match
+       if (password !== confirmPassword) {
+           errorDiv.innerHTML = '⚠️ Passwords do not match';
+           return;
+       }
+
+       try {
+           const formData = new FormData(this);
+           const response = await fetch('{% url "register" %}', {
+               method: 'POST',
+               body: formData,
+               headers: {
+                   'X-CSRFToken': '{{ csrf_token }}'
+               }
+           });
+           
+           const data = await response.json();
+           
+           if (data.success) {
+               window.location.href = '{% url "login" %}';
+           } else {
+               errorDiv.innerHTML = data.error;
+           }
+       } catch (error) {
+           console.error('Error:', error);
+           errorDiv.innerHTML = 'Registration failed. Please try again.';
+       }
+   });
+
+
+</script>
+{% endblock javascripts %}

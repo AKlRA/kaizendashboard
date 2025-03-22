@@ -1,0 +1,308 @@
+<nav class="navbar navbar-top navbar-expand navbar-dark bg-primary border-bottom">
+  <div class="container-fluid">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <!-- Search form -->
+      <form class="navbar-search navbar-search-light form-inline mr-sm-3" id="navbar-search-main" onsubmit="return false;">
+        <div class="form-group mb-0">
+          <div class="input-group input-group-alternative input-group-merge">
+            <div class="input-group-prepend">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+            </div>
+            <input class="form-control" placeholder="Search" type="text" id="searchInput" oninput="searchContent(this.value)">
+          </div>
+        </div>
+        <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </form>
+
+      <!-- Navbar links -->
+      <ul class="navbar-nav align-items-center ml-md-auto">
+        <li class="nav-item d-xl-none">
+          <!-- Sidenav toggler -->
+          <div class="pr-3 sidenav-toggler sidenav-toggler-dark" data-action="sidenav-pin" data-target="#sidenav-main">
+            <div class="sidenav-toggler-inner">
+              <i class="sidenav-toggler-line"></i>
+              <i class="sidenav-toggler-line"></i>
+              <i class="sidenav-toggler-line"></i>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- User Profile -->
+      <ul class="navbar-nav align-items-center ml-auto ml-md-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <div class="media align-items-center">
+              <span class="avatar avatar-sm rounded-circle">
+                <i class="fas fa-user-circle" style="font-size: 36px; color: #f4f5f7;"></i>              </span>
+              <div class="media-body ml-2 d-none d-lg-block">
+                <span class="mb-0 text-sm font-weight-bold">
+                  {{ request.user.username }}
+                </span>
+              </div>
+            </div>
+          </a>
+          <div class="dropdown-menu dropdown-menu-right">
+            <div class="dropdown-header noti-title">
+                <h6 class="text-overflow m-0">Welcome!</h6>
+            </div>
+            <a href="#" class="dropdown-item" data-toggle="modal" data-target="#profile-edit-modal">
+                <i class="ni ni-single-02"></i>
+                <span>Edit Profile</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a href="{% url 'logout' %}" class="dropdown-item">
+                <i class="ni ni-user-run text-red"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+        </li>
+      </ul>
+    </div>
+    <div class="modal fade" id="profile-edit-modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title">Edit Profile</h5>
+                  <button type="button" class="close" data-dismiss="modal">
+                      <span>&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <form id="profile-edit-form" method="post">
+                      {% csrf_token %}
+                      <div class="form-group">
+                          <label class="form-control-label">Username</label>
+                          <input type="text" id="edit_username" name="username" class="form-control" value="{{ request.user.username }}" required>
+                      </div>
+                      <div class="form-group">
+                          <label class="form-control-label">New Password (leave blank to keep current)</label>
+                          <input type="password" id="edit_password" name="password" class="form-control">
+                          <small class="form-text text-muted">Password should be changed every 40 days for security.</small>
+                      </div>
+                      <div class="text-center">
+                          <button type="button" onclick="updateProfile()" class="btn btn-primary">Save Changes</button>
+                          <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-account-modal">
+                              Delete Account
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Delete Account Modal -->
+  <div class="modal fade" id="delete-account-modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title">Delete Account</h5>
+                  <button type="button" class="close" data-dismiss="modal">
+                      <span>&times;</span>
+                  </button>
+              </div>
+              <div class="modal-body">
+                  <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                  <p>You can create a new account later using the same employee ID and email.</p>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+              </div>
+          </div>
+      </div>
+  </div>
+  </div>
+</nav>
+<script>
+  // Debounce function to limit search frequency
+  function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+  }
+  
+  // Improved search function with debounce
+  const searchContent = debounce(function(searchText) {
+      // Remove existing highlights
+      const highlights = document.getElementsByClassName('search-highlight');
+      while(highlights.length > 0) {
+          const parent = highlights[0].parentNode;
+          parent.innerHTML = parent.innerHTML.replace(/<mark class="search-highlight">(.*?)<\/mark>/g, '$1');
+      }
+  
+      if (!searchText.trim()) return;
+  
+      try {
+          const searchRegex = new RegExp(searchText, 'gi');
+          const contentNodes = document.querySelectorAll('td, th, p, h1, h2, h3, h4, h5, h6, span:not(.search-highlight)');
+          let firstMatch = null;
+  
+          contentNodes.forEach(node => {
+              if (!node.hasChildNodes() || node.children.length === 0) {
+                  const text = node.textContent;
+                  if (text.match(searchRegex)) {
+                      const highlightedText = text.replace(
+                          searchRegex,
+                          match => `<mark class="search-highlight">${match}</mark>`
+                      );
+                      node.innerHTML = highlightedText;
+                      
+                      if (!firstMatch) {
+                          firstMatch = node.querySelector('.search-highlight');
+                      }
+                  }
+              }
+          });
+  
+          // Scroll to first match if found
+          if (firstMatch) {
+              firstMatch.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center'
+              });
+          }
+      } catch (error) {
+          console.error('Search error:', error);
+      }
+  }, 300); // 300ms debounce delay
+
+  function updateProfile() {
+    const formData = new FormData();
+    const username = document.getElementById('edit_username').value;
+    const password = document.getElementById('edit_password').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    formData.append('username', username);
+    if (password) {
+        formData.append('password', password);
+    }
+
+    fetch('/update-profile/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Profile updated successfully! Please log in again.');
+            window.location.href = '/login/';
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error occurred'));
+        }
+    })
+    .catch(error => {
+        console.error('Update error:', error);
+        alert('Error updating profile: ' + error.message);
+    });
+}
+
+function deleteAccount() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('/delete-account/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Account deleted successfully.');
+            window.location.href = '/login/';
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error occurred'));
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        alert('Error deleting account: ' + error.message);
+    });
+}
+
+function checkPasswordAge() {
+    // Remove any existing warning
+    const existingWarning = document.querySelector('#profile-edit-modal .alert-warning');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+
+    fetch('/check-password-age/', {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.should_change_password) {
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'alert alert-warning mt-3';
+            warningDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                Your password is ${data.days_since_change} days old. For security reasons, please change your password if it's been more than 40 days.
+            `;
+            const modalBody = document.querySelector('#profile-edit-modal .modal-body');
+            modalBody.insertBefore(warningDiv, modalBody.firstChild);
+        }
+    })
+    .catch(error => console.error('Error checking password age:', error));
+}
+
+// Add this to each dashboard's JavaScript section
+document.addEventListener('DOMContentLoaded', function() {
+    // Check password age when profile modal is opened
+    $('#profile-edit-modal').on('show.bs.modal', function () {
+        checkPasswordAge();
+    });
+});
+  </script>
+
+<style>
+  .search-highlight {
+      background-color: rgba(255, 215, 0, 0.5);
+      padding: 2px;
+      border-radius: 2px;
+      color: inherit;
+  }
+  
+  .search-highlight:hover {
+      background-color: rgba(255, 215, 0, 0.7);
+  }
+  
+  #searchInput {
+      transition: all 0.3s ease;
+  }
+  
+  #searchInput:focus {
+      border-color: #800000;
+      box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
+  }
+
+  .alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.375rem;
+    }
+    .alert-warning i {
+        margin-right: 0.5rem;
+    }
+  </style>
