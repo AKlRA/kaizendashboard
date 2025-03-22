@@ -32,22 +32,25 @@ SECRET_KEY = 'django-insecure--y_c75+%#fo)a^=gn)ro5qfli5p495ck&mu=sm(^dwtwa+wf6s
 DEBUG = False
 
 
+# CORS and Host Settings
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '*',  # Allow all hosts - BE CAREFUL with this in production
+    '172.22.1.17',  # Server IP
+    '*',  # Allow all hosts temporarily for testing
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://172.22.1.17:8000",  # Server IP
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://172.22.1.17:8000",  # Server IP
 ]
-
 
 # Application definition
 
@@ -77,9 +80,9 @@ MIDDLEWARE = [
 
 MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite default port
-]
+# Enable CORS for development
+CORS_ALLOW_ALL_ORIGINS = True  # Be careful with this in production
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
