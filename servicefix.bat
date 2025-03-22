@@ -20,10 +20,10 @@ net stop KaizenProject 2>nul
 sc delete KaizenProject 2>nul
 timeout /t 10 /nobreak > nul
 
-:: Install service using the batch file
+:: Install service with correct Python and parameters
 echo Installing service...
-%NSSM_PATH% install KaizenProject %VENV_PATH%\Scripts\python.exe
-%NSSM_PATH% set KaizenProject AppParameters "%PROJECT_PATH%\run_waitress.bat"
+%NSSM_PATH% install KaizenProject "%VENV_PATH%\Scripts\python.exe"
+%NSSM_PATH% set KaizenProject AppParameters "-m waitress.cli --listen=*:8000 kaizen_project.wsgi:application"
 %NSSM_PATH% set KaizenProject AppDirectory %PROJECT_PATH%
 %NSSM_PATH% set KaizenProject DisplayName "Ace Kaizen Dashboard"
 %NSSM_PATH% set KaizenProject Description "Ace Kaizen Project Web Application"
@@ -49,18 +49,3 @@ timeout /t 5 /nobreak > nul
 :: Check service status
 echo Checking service status...
 sc query KaizenProject
-
-if exist "%PROJECT_PATH%\logs\service.error.log" (
-    echo.
-    echo Error Log Contents:
-    type "%PROJECT_PATH%\logs\service.error.log"
-)
-
-echo.
-echo Manual Test Steps:
-echo 1. Try running: %PROJECT_PATH%\run_waitress.bat
-echo 2. Check logs in: %PROJECT_PATH%\logs\
-echo 3. Service status: sc query KaizenProject
-pause
-
-endlocal
