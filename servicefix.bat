@@ -20,10 +20,15 @@ net stop KaizenProject 2>nul
 sc delete KaizenProject 2>nul
 timeout /t 10 /nobreak > nul
 
-:: Install service with correct Python and parameters
+:: Create start script
+echo @echo off > "%PROJECT_PATH%\start_server.bat"
+echo call "%VENV_PATH%\Scripts\activate" >> "%PROJECT_PATH%\start_server.bat"
+echo waitress-serve --listen=*:8000 kaizen_project.wsgi:application >> "%PROJECT_PATH%\start_server.bat"
+
+:: Install service with batch file
 echo Installing service...
-%NSSM_PATH% install KaizenProject "%VENV_PATH%\Scripts\waitress-serve.exe"
-%NSSM_PATH% set KaizenProject AppParameters "--listen=*:8000 kaizen_project.wsgi:application"
+%NSSM_PATH% install KaizenProject cmd.exe
+%NSSM_PATH% set KaizenProject AppParameters "/c %PROJECT_PATH%\start_server.bat"
 %NSSM_PATH% set KaizenProject AppDirectory %PROJECT_PATH%
 %NSSM_PATH% set KaizenProject DisplayName "Ace Kaizen Dashboard"
 %NSSM_PATH% set KaizenProject Description "Ace Kaizen Project Web Application"
