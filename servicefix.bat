@@ -22,8 +22,8 @@ timeout /t 10 /nobreak > nul
 
 :: Install service with correct Python and parameters
 echo Installing service...
-%NSSM_PATH% install KaizenProject "%VENV_PATH%\Scripts\python.exe"
-%NSSM_PATH% set KaizenProject AppParameters "-m waitress.cli --listen=*:8000 kaizen_project.wsgi:application"
+%NSSM_PATH% install KaizenProject "%VENV_PATH%\Scripts\waitress-serve.exe"
+%NSSM_PATH% set KaizenProject AppParameters "--listen=*:8000 kaizen_project.wsgi:application"
 %NSSM_PATH% set KaizenProject AppDirectory %PROJECT_PATH%
 %NSSM_PATH% set KaizenProject DisplayName "Ace Kaizen Dashboard"
 %NSSM_PATH% set KaizenProject Description "Ace Kaizen Project Web Application"
@@ -49,3 +49,9 @@ timeout /t 5 /nobreak > nul
 :: Check service status
 echo Checking service status...
 sc query KaizenProject
+
+if exist "%PROJECT_PATH%\logs\service.error.log" (
+    echo.
+    echo Error Log Contents:
+    type "%PROJECT_PATH%\logs\service.error.log"
+)
