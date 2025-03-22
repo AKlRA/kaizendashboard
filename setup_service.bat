@@ -6,8 +6,8 @@ echo ====================================
 
 :: Set paths
 set NSSM_PATH="C:\Program Files\nssm\win64\nssm.exe"
-set PROJECT_PATH="C:\Users\Bhuvan\Desktop\work\backup_test\Ace_kaizen_project\kaizen_project"
-set PYTHON_PATH="C:\Python312\python.exe"
+set PROJECT_PATH="C:\kaizen_project\kaizendashboard"
+set PYTHON_PATH="C:\Users\administrator.AMSLINDIA\AppData\Local\Programs\Python\Python313\python.exe"
 
 :: Get server IP for network access
 for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address"') do (
