@@ -4,7 +4,7 @@ echo ====================================
 
 :: Set paths
 set NSSM_PATH="C:\Program Files\nssm\win64\nssm.exe"
-set PROJECT_PATH="C:\Users\Bhuvan\Desktop\work\backup_test\Ace_kaizen_project\kaizen_project"
+set PROJECT_PATH="C:\kaizen_project\kaizendashboard"
 
 :: Stop and remove existing service
 echo Stopping and removing existing service...
