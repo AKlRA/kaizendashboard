@@ -21,5 +21,12 @@ pip install -r requirements.txt
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-:: Start server in minimized window
-start "Kaizen Dashboard" /min cmd /c "python -m waitress-serve --host=0.0.0.0 --port=8000 kaizen_project.wsgi:application >> %LOG_PATH%\server.log 2>> %LOG_PATH%\error.log"
+:: Start server in minimized window and return immediately
+start "Kaizen Dashboard" /min cmd /c "python -m waitress-serve --host=0.0.0.0 --port=8000 kaizen_project.wsgi:application >> "%LOG_PATH%\server.log" 2>> "%LOG_PATH%\error.log""
+
+:: Add success message and small delay
+echo Server started successfully! Check http://localhost:8000
+timeout /t 2 > nul
+
+:: Return to menu
+exit /b 0
