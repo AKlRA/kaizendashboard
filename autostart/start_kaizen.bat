@@ -17,16 +17,8 @@ echo [%date% %time%] Starting Kaizen Dashboard... >> "%LOG_PATH%\startup.log"
 :: Kill any existing server instances
 taskkill /FI "WINDOWTITLE eq Kaizen Dashboard*" /F >nul 2>&1
 
-:: Activate virtual environment and update
+:: Activate virtual environment
 call venv\Scripts\activate
-
-:: Fix pip and requirements
-python -m pip install --upgrade pip
-pip install -r requirements.txt --no-cache-dir
-
-:: Update database
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput --clear
 
 :: Display server information
 echo Server starting on http://acekaizen.local:8000
