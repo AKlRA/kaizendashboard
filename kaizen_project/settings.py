@@ -36,19 +36,21 @@ DEBUG = False
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '172.22.1.17',  # Server IP
+    '172.22.1.17',
+    '192.168.1.14',  # Server IP
     '*',  # Allow all hosts temporarily for testing
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
-    "http://172.22.1.17:8000",  # Server IP
+    "http://192.168.1.14:8000",  # Server IP
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://192.168.1.14:8000",  # Server IP
     "http://172.22.1.17:8000",  # Server IP
 ]
 
