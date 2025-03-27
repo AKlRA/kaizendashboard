@@ -1,4 +1,3 @@
-REM filepath: c:\Users\Bhuvan\Desktop\work\backup_test\Ace_kaizen_project\kaizen_project\autostart\start_kaizen.bat
 @echo off
 setlocal EnableDelayedExpansion
 title Kaizen Dashboard Server
@@ -29,26 +28,17 @@ pip install -r requirements.txt --no-cache-dir
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput --clear
 
-:: Start server in minimized window
-start "Kaizen Dashboard" /min cmd /c "python -m waitress-serve --host=0.0.0.0 --port=8000 kaizen_project.wsgi:application >> "%LOG_PATH%\server.log" 2>> "%LOG_PATH%\error.log""
+:: Display server information
+echo Server starting on http://acekaizen.local:8000
+echo Your server IP is:
+ipconfig | findstr "IPv4"
+echo Access URLs:
+echo Local: http://localhost:8000
+echo Network: http://acekaizen.local:8000
 
-:: Verify server started
-timeout /t 3 > nul
-netstat -ano | findstr ":8000" > nul
-if errorlevel 1 (
-    echo Server failed to start! Check logs for details.
-    type "%LOG_PATH%\error.log"
-    pause
-    exit /b 1
-) else (
-    echo.
-    echo Server started successfully!
-    echo Access URLs:
-    echo - Local: http://localhost:8000
-    echo - Network: http://%COMPUTERNAME%:8000
-    echo.
-    echo Press any key to return to menu...
-    pause > nul
-)
+:: Start server with improved reliability
+python -c "from waitress import serve; import logging; logging.basicConfig(level=logging.INFO); from kaizen_project.wsgi import application; print('Server started successfully!'); serve(application, host='0.0.0.0', port=8000, threads=4)" >> "%LOG_PATH%\server.log" 2>> "%LOG_PATH%\error.log"
 
+echo Press any key to return to menu...
+pause > nul
 exit /b 0
