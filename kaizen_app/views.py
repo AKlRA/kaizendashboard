@@ -862,6 +862,7 @@ def save_kaizen_sheet(request):
     if request.method == "POST":
         kaizen_id = request.POST.get('kaizen_id')
         instance = None
+        
         if kaizen_id:
             instance = get_object_or_404(KaizenSheet, id=kaizen_id, employee=request.user)
             
@@ -870,6 +871,24 @@ def save_kaizen_sheet(request):
         if form.is_valid():
             try:
                 kaizen = form.save(commit=False)
+                
+                # Check CIP number uniqueness if it's changed or new
+                if instance:
+                    old_cip = instance.serial_key
+                    new_cip = form.cleaned_data.get('serial_key')
+                    if old_cip != new_cip:
+                        if KaizenSheet.objects.exclude(id=instance.id).filter(serial_key=new_cip).exists():
+                            return JsonResponse({
+                                'success': False, 
+                                'error': 'This CIP number already exists. Please use a different one.'
+                            })
+                else:
+                    if KaizenSheet.objects.filter(serial_key=form.cleaned_data.get('serial_key')).exists():
+                        return JsonResponse({
+                            'success': False, 
+                            'error': 'This CIP number already exists. Please use a different one.'
+                        })
+
                 kaizen.employee = request.user
                 
                 # Handle impact fields
@@ -891,21 +910,65 @@ def save_kaizen_sheet(request):
                 kaizen.save()
                 
                 # Handle file uploads
-                file_fields = ['standardization_file', 'cost_calculation',
-                             'before_improvement_image', 'after_improvement_image']
+                file_fields = [
+                    'standardization_file', 
+                    'cost_calculation',
+                    'before_improvement_image', 
+                    'after_improvement_image'
+                ]
+                
                 for field in file_fields:
                     if field in request.FILES:
+                        # Delete old file if exists
+                        old_file = getattr(kaizen, field, None)
+                        if old_file:
+                            old_file.delete()
+                        # Save new file    
                         setattr(kaizen, field, request.FILES[field])
                 
+                # Final save after file handling
                 kaizen.save()
-                return JsonResponse({'success': True})
+
+                # If this is a handwritten sheet, handle additional fields
+                if kaizen.is_handwritten:
+                    if 'handwritten_sheet' in request.FILES:
+                        old_sheet = kaizen.handwritten_sheet
+                        if old_sheet:
+                            old_sheet.delete()
+                        kaizen.handwritten_sheet = request.FILES['handwritten_sheet']
+                        kaizen.save()
+
+                return JsonResponse({
+                    'success': True,
+                    'kaizen_id': kaizen.id,
+                    'serial_key': kaizen.serial_key
+                })
                 
+            except IntegrityError as e:
+                if 'serial_key' in str(e):
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'This CIP number already exists. Please use a different one.'
+                    })
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Database error: {str(e)}'
+                })
             except Exception as e:
-                return JsonResponse({'success': False, 'error': str(e)})
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Error saving kaizen sheet: {str(e)}'
+                })
         else:
-            return JsonResponse({'success': False, 'error': form.errors})
+            return JsonResponse({
+                'success': False, 
+                'error': form.errors
+            })
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    return JsonResponse({
+        'success': False, 
+        'error': 'Invalid request method'
+    })
 
 # views.py
 @login_required
@@ -1304,9 +1367,22 @@ def get_all_financial_years(request):
 
 @login_required
 def check_cip_number(request, cip_number, current_sheet_id):
-    exists = KaizenSheet.objects.exclude(id=current_sheet_id).filter(serial_key=cip_number).exists()
-    return JsonResponse({'exists': exists})
-
+    """Check if a CIP number exists, excluding the current sheet"""
+    try:
+        # Check if CIP exists in any other sheet
+        exists = KaizenSheet.objects.exclude(
+            id=current_sheet_id
+        ).filter(
+            serial_key=cip_number,
+            is_temporary=False  # Exclude temporary sheets
+        ).exists()
+        
+        return JsonResponse({'exists': exists})
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+    
 @login_required
 def get_department_data(request, year, month):
     if not request.active_profile.is_coordinator:

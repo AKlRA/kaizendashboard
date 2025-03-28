@@ -401,14 +401,9 @@
                        data-impact-cost="{{ sheet.impacts_cost|lower }}"
                        data-impact-morale="{{ sheet.impacts_morale|lower }}"
                        data-impact-environment="{{ sheet.impacts_environment|lower }}">
-                       <td contenteditable="true" data-field="serial_key">{{ sheet.serial_key }}</td>
+                       <td>{{ sheet.serial_key }}</td>
                        <td>{{ sheet.created_at|date:"F" }}</td>
-                       <td>
-                          <input type="date" class="form-control form-control-sm" 
-                                 data-field="registered_date"
-                                 value="{{ sheet.created_at|date:'Y-m-d' }}"
-                                 onchange="handleDateChange(this, '{{ sheet.id }}')">
-                       </td>
+                       <td>{{ sheet.created_at|date:"Y-m-d" }}</td>
                        <td>FY {{ sheet.created_at|financial_year }}</td>
                        <td>
                           {% if sheet.approval_status == 'completed' %}
@@ -454,7 +449,7 @@
                                 </select>
                             </div>
                         </td>
-                        <td contenteditable="true" data-field="project_leader">{{ sheet.project_leader }}</td>
+                        <td data-field="project_leader">{{ sheet.project_leader }}</td>
                         <td contenteditable="true" data-field="team_member1_id">{{ sheet.team_member1_id }}</td>
                         <td contenteditable="true" data-field="team_member1">{{ sheet.employee.username }}</td>
                         <td contenteditable="true" data-field="team_member2_id">{{ sheet.team_member2_id }}</td>
@@ -1047,17 +1042,25 @@ function viewCostDetails(sheetId) {
     }
 
 
-function saveChanges(btn) {
+    function saveChanges(btn) {
     const sheetId = btn.getAttribute('data-sheet-id');
     const row = document.querySelector(`tr[data-sheet-id="${sheetId}"]`);
     const data = {};
 
+    // Get original CIP number first
+    const originalCipNo = row.querySelector('[data-field="serial_key"]').getAttribute('data-original-value') || '';
+    const currentCipNo = row.querySelector('[data-field="serial_key"]').textContent.trim();
+
     // Collect data from all editable elements
-    // Contenteditable fields
     row.querySelectorAll('[contenteditable="true"]').forEach(cell => {
         const field = cell.getAttribute('data-field');
         let value = cell.textContent.trim();
         data[field] = value;
+        
+        // Store original value as data attribute if not already present
+        if (field === 'serial_key' && !cell.hasAttribute('data-original-value')) {
+            cell.setAttribute('data-original-value', value);
+        }
     });
 
     // Date inputs
@@ -1078,8 +1081,8 @@ function saveChanges(btn) {
         data['area_grouping'] = areaGroupingSelect.value;
     }
 
-    // Check for CIP number change
-    if (data.serial_key) {
+    // Only check for CIP number changes if it was actually modified
+    if (data.serial_key && data.serial_key !== originalCipNo) {
         checkAndSaveChanges(data, sheetId, btn);
     } else {
         submitChanges(data, sheetId, btn);
@@ -1096,27 +1099,35 @@ function checkAndSaveChanges(data, sheetId, btn) {
             if (result.exists) {
                 Swal.fire({
                     title: 'CIP Number Already Exists',
-                    text: 'This CIP number is already in use. Do you want to continue?',
+                    text: 'This CIP number is already in use. Please choose a different one.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#800000',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Yes, continue',
-                    cancelButtonText: 'No, cancel'
+                    confirmButtonText: 'Enter New CIP No',
+                    cancelButtonText: 'Cancel'
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        submitChanges(data, sheetId, btn);
-                    } else {
-                        location.reload();
+                    if (!result.isConfirmed) {
+                        // Revert to original CIP number
+                        const cipCell = document.querySelector(`tr[data-sheet-id="${sheetId}"] [data-field="serial_key"]`);
+                        cipCell.textContent = cipCell.getAttribute('data-original-value');
                     }
                 });
             } else {
                 submitChanges(data, sheetId, btn);
+                // Update original value after successful save
+                const cipCell = document.querySelector(`tr[data-sheet-id="${sheetId}"] [data-field="serial_key"]`);
+                cipCell.setAttribute('data-original-value', data.serial_key);
             }
         })
         .catch(error => {
             console.error('Error checking CIP number:', error);
-            alert('Error checking CIP number availability');
+            Swal.fire({
+                title: 'Error!',
+                text: 'Error checking CIP number availability',
+                icon: 'error',
+                confirmButtonColor: '#800000'
+            });
         });
 }
 
