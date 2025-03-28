@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 title Kaizen Dashboard Setup
-cd /d "%~dp0\.."
+cd /d "%~dp0"
 
 :: Set environment variables
 set DJANGO_SETTINGS_MODULE=kaizen_project.settings
