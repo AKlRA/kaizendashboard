@@ -8,7 +8,9 @@ set DJANGO_SETTINGS_MODULE=kaizen_project.settings
 set PYTHONPATH=%cd%
 set LOG_PATH=%cd%\logs
 
-:: Create logs directory if not exists
+:: Create directories if not exist
+if not exist "static" mkdir static
+if not exist "media" mkdir media
 if not exist "%LOG_PATH%" mkdir "%LOG_PATH%"
 
 :: Log startup time
@@ -19,6 +21,9 @@ taskkill /FI "WINDOWTITLE eq Kaizen Dashboard*" /F >nul 2>&1
 
 :: Activate virtual environment
 call venv\Scripts\activate
+
+:: Collect static files
+python manage.py collectstatic --noinput
 
 :: Display server information
 echo Server starting on http://acekaizen.local:8000

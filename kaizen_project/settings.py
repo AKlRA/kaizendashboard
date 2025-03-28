@@ -199,8 +199,19 @@ WHITENOISE_USE_FINDERS = True
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGIN_URL = 'login'
 
+# Media files settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# For production environment
+DEBUG = True  # Temporarily set to True for testing
+ALLOWED_HOSTS = ['*']  # Be more specific in production
+
+# Ensure static file finders are configured
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
