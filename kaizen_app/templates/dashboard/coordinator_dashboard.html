@@ -447,18 +447,17 @@
       </div>
    </div>
 </div>
-<div class="modal fade" id="employeeStatsModal" tabindex="-1" role="dialog" aria-labelledby="employeeStatsModalLabel" aria-hidden="true">
-   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h5 class="modal-title" id="employeeStatsModalLabel">Employee Statistics</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-            </button>
-         </div>
-         <div class="modal-body">
-            <div class="table-responsive">
-               <table class="table align-items-center">
+<!-- Replace the existing Employee Stats Modal -->
+<div class="modal fade" id="employeeStatsModal" tabindex="-1" aria-labelledby="employeeStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+       <div class="modal-content">
+          <div class="modal-header">
+             <h5 class="modal-title" id="employeeStatsModalLabel">Employee Statistics</h5>
+             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+             <div class="table-responsive">
+                <table class="table align-items-center">
                   <thead class="thead-light">
                      <tr>
                         <th>Employee</th>
@@ -485,14 +484,14 @@
       </div>
    </div>
 </div>
-<!-- Target Achievers Modal -->
-<div class="modal fade" id="targetAchieversModal" tabindex="-1" role="dialog" aria-labelledby="targetAchieversModalLabel" aria-hidden="true">
-   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-      <div class="modal-content">
-         <div class="modal-header">
-            <h5 class="modal-title" id="targetAchieversModalLabel">Target Achievers</h5>
-            <div class="ml-auto">
-               <select id="targetYear" class="form-control form-control-sm d-inline-block" style="width: auto;">
+<!-- Replace the existing Target Achievers Modal -->
+<div class="modal fade" id="targetAchieversModal" tabindex="-1" aria-labelledby="targetAchieversModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+       <div class="modal-content">
+          <div class="modal-header">
+             <h5 class="modal-title" id="targetAchieversModalLabel">Target Achievers</h5>
+             <div class="ml-auto">
+                <select id="targetYear" class="form-control form-control-sm d-inline-block" style="width: auto;">
                {% for year in year_range %}
                <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>
                {{ year }}
@@ -514,7 +513,7 @@
                 <option value="12">December</option>
             </select>
             </div>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             <span aria-hidden="true">&times;</span>
             </button>
          </div>
@@ -1321,30 +1320,30 @@ function getMonthLabels(yearType) {
         ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] :
         ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 }
-   // Modal Functions
-   function showEmployeeStats() {
-       $('#employeeStatsModal').modal({
-           backdrop: 'static',
-           keyboard: false
-       });
-   }
+// Replace the showEmployeeStats function
+function showEmployeeStats() {
+    const modal = new bootstrap.Modal(document.getElementById('employeeStatsModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    modal.show();
+}
+
    
-   function showTargetAchievers() {
-       // Set current date
-       const now = new Date();
-       const yearSelect = document.getElementById('targetYear');
-       const monthSelect = document.getElementById('targetMonth');
-       
-       // Set defaults
-       yearSelect.value = now.getFullYear();
-       monthSelect.value = now.getMonth() + 1;
-       
-       // Show modal
-       $('#targetAchieversModal').modal('show');
-       
-       // Load data
-       loadTargetAchievers();
-   }
+// Replace the showTargetAchievers function
+function showTargetAchievers() {
+    const now = new Date();
+    const yearSelect = document.getElementById('targetYear');
+    const monthSelect = document.getElementById('targetMonth');
+    
+    yearSelect.value = now.getFullYear();
+    monthSelect.value = now.getMonth() + 1;
+    
+    const modal = new bootstrap.Modal(document.getElementById('targetAchieversModal'));
+    modal.show();
+    
+    loadTargetAchievers();
+}
    
    async function loadTargetAchievers() {
     const tbody = document.getElementById('targetAchieversBody');
@@ -1557,6 +1556,16 @@ document.addEventListener('DOMContentLoaded', function() {
        }
    }
    
+   // Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    // Update modal close handlers
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Clean up any necessary state
+        });
+    });
+});
    // Add event listeners for the year and month selectors
    document.getElementById('targetYear').addEventListener('change', loadTargetAchievers);
    document.getElementById('targetMonth').addEventListener('change', loadTargetAchievers);
