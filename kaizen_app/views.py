@@ -1303,6 +1303,11 @@ def get_all_financial_years(request):
         })
 
 @login_required
+def check_cip_number(request, cip_number, current_sheet_id):
+    exists = KaizenSheet.objects.exclude(id=current_sheet_id).filter(serial_key=cip_number).exists()
+    return JsonResponse({'exists': exists})
+
+@login_required
 def get_department_data(request, year, month):
     if not request.active_profile.is_coordinator:
         return JsonResponse({"error": "Unauthorized"}, status=403)

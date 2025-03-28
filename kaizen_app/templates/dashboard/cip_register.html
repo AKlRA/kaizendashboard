@@ -392,39 +392,44 @@
                      </tr>
                   </thead>
                   <tbody>
-                     {% for sheet in kaizen_sheets %}
-                     <tr data-sheet-id="{{ sheet.id }}"
-                        data-impact-safety="{{ sheet.impacts_safety|lower }}"
-                        data-impact-quality="{{ sheet.impacts_quality|lower }}"
-                        data-impact-productivity="{{ sheet.impacts_productivity|lower }}"
-                        data-impact-delivery="{{ sheet.impacts_delivery|lower }}"
-                        data-impact-cost="{{ sheet.impacts_cost|lower }}"
-                        data-impact-morale="{{ sheet.impacts_morale|lower }}"
-                        data-impact-environment="{{ sheet.impacts_environment|lower }}">
-                        <td>{{ sheet.serial_key }}</td>
-                        <td>{{ sheet.created_at|date:"F" }}</td>
-                        <td>{{ sheet.created_at|date:"Y-m-d" }}</td>
-                        <td>FY {{ sheet.created_at|financial_year }}</td>
-                        <td>
-                            {% if sheet.approval_status == 'completed' %}
-                                <span class="badge badge-success">Completed</span>
-                            {% elif sheet.approval_status == 'rejected_by_hod' %}
-                                <span class="badge badge-danger">Rejected by HOD</span>
-                            {% elif sheet.approval_status == 'rejected_by_coordinator' %}
-                                <span class="badge badge-danger">Rejected by Coordinator</span>
-                            {% elif sheet.approval_status == 'rejected_by_finance' %}
-                                <span class="badge badge-danger">Rejected by Finance</span>
-                            {% elif sheet.approval_status == 'finance_pending' %}
-                                <span class="badge badge-warning">Finance Approval Pending</span>
-                            {% elif sheet.approval_status == 'coordinator_pending' %}
-                                <span class="badge badge-info">Coordinator Approval Pending</span>
-                            {% else %}
-                                <span class="badge badge-secondary">HOD Approval Pending</span>
-                            {% endif %}
-                        </td>
-                        <td contenteditable="true" data-field="title">{{ sheet.title }}</td>
-                        <td>{{ sheet.employee.profiles.first.department }}</td>
-                        <td>
+                    {% for sheet in kaizen_sheets %}
+                    <tr data-sheet-id="{{ sheet.id }}"
+                       data-impact-safety="{{ sheet.impacts_safety|lower }}"
+                       data-impact-quality="{{ sheet.impacts_quality|lower }}"
+                       data-impact-productivity="{{ sheet.impacts_productivity|lower }}"
+                       data-impact-delivery="{{ sheet.impacts_delivery|lower }}"
+                       data-impact-cost="{{ sheet.impacts_cost|lower }}"
+                       data-impact-morale="{{ sheet.impacts_morale|lower }}"
+                       data-impact-environment="{{ sheet.impacts_environment|lower }}">
+                       <td contenteditable="true" data-field="serial_key">{{ sheet.serial_key }}</td>
+                       <td>{{ sheet.created_at|date:"F" }}</td>
+                       <td>
+                          <input type="date" class="form-control form-control-sm" 
+                                 data-field="registered_date"
+                                 value="{{ sheet.created_at|date:'Y-m-d' }}"
+                                 onchange="handleDateChange(this, '{{ sheet.id }}')">
+                       </td>
+                       <td>FY {{ sheet.created_at|financial_year }}</td>
+                       <td>
+                          {% if sheet.approval_status == 'completed' %}
+                              <span class="badge badge-success">Completed</span>
+                          {% elif sheet.approval_status == 'rejected_by_hod' %}
+                              <span class="badge badge-danger">Rejected by HOD</span>
+                          {% elif sheet.approval_status == 'rejected_by_coordinator' %}
+                              <span class="badge badge-danger">Rejected by Coordinator</span>
+                          {% elif sheet.approval_status == 'rejected_by_finance' %}
+                              <span class="badge badge-danger">Rejected by Finance</span>
+                          {% elif sheet.approval_status == 'finance_pending' %}
+                              <span class="badge badge-warning">Finance Approval Pending</span>
+                          {% elif sheet.approval_status == 'coordinator_pending' %}
+                              <span class="badge badge-info">Coordinator Approval Pending</span>
+                          {% else %}
+                              <span class="badge badge-secondary">HOD Approval Pending</span>
+                          {% endif %}
+                       </td>
+                       <td contenteditable="true" data-field="title">{{ sheet.title }}</td>
+                       <td contenteditable="true" data-field="project_area">{{ sheet.employee.profiles.first.department }}</td>
+                       <td>
                             <div class="area-grouping-container">
                                 <div class="area-display">
                                     {% if sheet.area_grouping %}
@@ -449,22 +454,34 @@
                                 </select>
                             </div>
                         </td>
-                        <td>{{ sheet.project_leader }}</td>
+                        <td contenteditable="true" data-field="project_leader">{{ sheet.project_leader }}</td>
                         <td contenteditable="true" data-field="team_member1_id">{{ sheet.team_member1_id }}</td>
-                        <td>{{ sheet.employee.username }}</td>
+                        <td contenteditable="true" data-field="team_member1">{{ sheet.employee.username }}</td>
                         <td contenteditable="true" data-field="team_member2_id">{{ sheet.team_member2_id }}</td>
                         <td contenteditable="true" data-field="team_member2">{{ sheet.team_member2 }}</td>
-                        <td contenteditable="true" data-field="start_date">{{ sheet.start_date|date:"Y-m-d" }}</td>
-                        <td contenteditable="true" data-field="end_date">{{ sheet.end_date|date:"Y-m-d" }}</td>
+                        <td>
+                           <input type="date" class="form-control form-control-sm" 
+                                  data-field="start_date"
+                                  value="{{ sheet.start_date|date:'Y-m-d' }}"
+                                  onchange="handleDateChange(this, '{{ sheet.id }}')">
+                        </td>
+                        <td>
+                           <input type="date" class="form-control form-control-sm" 
+                                  data-field="end_date"
+                                  value="{{ sheet.end_date|date:'Y-m-d' }}"
+                                  onchange="handleDateChange(this, '{{ sheet.id }}')">
+                        </td>
                         <td class="month-select-container">
-                            <select class="form-control month-select" data-field="savings_start_month" onchange="updateSavings(this, '{{ sheet.id }}')">
-                                <option value="">Select Month</option>
-                                {% for month in months %}
-                                    <option value="{{ month }}" {% if sheet.savings_start_month == month %}selected{% endif %}>
-                                        {{ month }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                           <select class="form-control month-select" 
+                                   data-field="savings_start_month" 
+                                   onchange="updateSavings(this, '{{ sheet.id }}')">
+                              <option value="">Select Month</option>
+                              {% for month in months %}
+                                 <option value="{{ month }}" {% if sheet.savings_start_month == month %}selected{% endif %}>
+                                    {{ month }}
+                                 </option>
+                              {% endfor %}
+                           </select>
                         </td>
                         <td contenteditable="true" data-field="estimated_savings">{{ sheet.estimated_savings }}</td>
                         <td contenteditable="true" data-field="realized_savings">{{ sheet.realized_savings }}</td>
@@ -1017,55 +1034,145 @@ function viewCostDetails(sheetId) {
         });
 }
    
-   function saveChanges(btn) {
-       const sheetId = btn.getAttribute('data-sheet-id');
-       const row = document.querySelector(`tr[data-sheet-id="${sheetId}"]`);
-       const editableCells = row.querySelectorAll('[contenteditable="true"]');
-       
-       const data = {};
-   
-       editableCells.forEach(cell => {
-           const field = cell.getAttribute('data-field');
-           let value = cell.textContent.trim();
-           data[field] = value;
-       });
-   
-       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-       data['csrfmiddlewaretoken'] = csrfToken;
-   
-       btn.disabled = true;
-       const originalText = btn.textContent;
-       btn.textContent = 'Saving...';
-   
-       fetch(`/update-kaizen/${sheetId}/`, {
-           method: 'POST',
-           headers: {
-               'X-CSRFToken': csrfToken,
-               'Content-Type': 'application/json',
-           },
-           body: JSON.stringify(data),
-       })
-       .then(response => response.json())
-       .then(data => {
-           if (data.success) {
-               btn.textContent = 'Saved!';
-               setTimeout(() => {
-                   btn.textContent = originalText;
-                   btn.disabled = false;
-               }, 2000);
-           } else {
-               alert('Error saving changes: ' + data.error);
-               btn.textContent = originalText;
-               btn.disabled = false;
-           }
-       })
-       .catch(error => {
-           console.error('Error:', error);
-           alert('Error saving changes');
-           btn.textContent = originalText;
-           btn.disabled = false;
-       });
-   }
+    // Add this to your existing JavaScript section
+    function handleDateChange(input, sheetId) {
+        const field = input.dataset.field;
+        const value = input.value;
+        
+        const data = {
+            [field]: value
+        };
+        
+        saveChanges(data, sheetId);
+    }
+
+
+function saveChanges(btn) {
+    const sheetId = btn.getAttribute('data-sheet-id');
+    const row = document.querySelector(`tr[data-sheet-id="${sheetId}"]`);
+    const data = {};
+
+    // Collect data from all editable elements
+    // Contenteditable fields
+    row.querySelectorAll('[contenteditable="true"]').forEach(cell => {
+        const field = cell.getAttribute('data-field');
+        let value = cell.textContent.trim();
+        data[field] = value;
+    });
+
+    // Date inputs
+    row.querySelectorAll('input[type="date"]').forEach(input => {
+        const field = input.dataset.field;
+        data[field] = input.value;
+    });
+
+    // Month select
+    const monthSelect = row.querySelector('.month-select');
+    if (monthSelect) {
+        data['savings_start_month'] = monthSelect.value;
+    }
+
+    // Area grouping select
+    const areaGroupingSelect = row.querySelector('.area-grouping-select');
+    if (areaGroupingSelect) {
+        data['area_grouping'] = areaGroupingSelect.value;
+    }
+
+    // Check for CIP number change
+    if (data.serial_key) {
+        checkAndSaveChanges(data, sheetId, btn);
+    } else {
+        submitChanges(data, sheetId, btn);
+    }
+}
+
+function checkAndSaveChanges(data, sheetId, btn) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // First check if CIP number exists
+    fetch(`/check-cip-number/${data.serial_key}/${sheetId}/`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.exists) {
+                Swal.fire({
+                    title: 'CIP Number Already Exists',
+                    text: 'This CIP number is already in use. Do you want to continue?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#800000',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, continue',
+                    cancelButtonText: 'No, cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitChanges(data, sheetId, btn);
+                    } else {
+                        location.reload();
+                    }
+                });
+            } else {
+                submitChanges(data, sheetId, btn);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking CIP number:', error);
+            alert('Error checking CIP number availability');
+        });
+}
+
+function submitChanges(data, sheetId, btn) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Show loading state
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    fetch(`/update-kaizen/${sheetId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(responseData => {
+        if (responseData.success) {
+            // Show success message
+            Swal.fire({
+                title: 'Saved!',
+                text: 'Changes have been saved successfully',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+
+        } else {
+            throw new Error(responseData.error || 'Unknown error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: error.message || 'Error saving changes',
+            icon: 'error',
+            confirmButtonColor: '#800000'
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
    
    async function downloadCIPRegister() {
        try {
