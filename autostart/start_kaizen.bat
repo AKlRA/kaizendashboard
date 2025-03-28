@@ -28,8 +28,8 @@ echo Access URLs:
 echo Local: http://localhost:8000
 echo Network: http://acekaizen.local:8000
 
-:: Start server with improved reliability
-python -c "from waitress import serve; import logging; logging.basicConfig(level=logging.INFO); from kaizen_project.wsgi import application; print('Server started successfully!'); serve(application, host='0.0.0.0', port=8000, threads=4)" >> "%LOG_PATH%\server.log" 2>> "%LOG_PATH%\error.log"
+:: Start server with improved reliability and static file serving
+python -c "from waitress import serve; import logging; from django.core.wsgi import get_wsgi_application; from django.conf import settings; from django.contrib.staticfiles.handlers import StaticFilesHandler; logging.basicConfig(level=logging.INFO); application = StaticFilesHandler(get_wsgi_application()) if settings.DEBUG else get_wsgi_application(); print('Server started successfully!'); serve(application, host='0.0.0.0', port=8000, threads=4)" >> "%LOG_PATH%\server.log" 2>> "%LOG_PATH%\error.log"
 
 echo Press any key to return to menu...
 pause > nul
