@@ -1899,6 +1899,23 @@ document.addEventListener('DOMContentLoaded', function() {
    }
 
 
+console.log('Modal debug script loaded');
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Checking modal functionality...');
+    
+    // Log all modal elements
+    const modals = document.querySelectorAll('.modal');
+    console.log('Found modals:', modals.length);
+    
+    // Log all modal triggers
+    const triggers = document.querySelectorAll('[data-bs-toggle="modal"]');
+    console.log('Found modal triggers:', triggers.length);
+    
+    // Check if Bootstrap is loaded
+    console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+});
+
 
 </script>
 {% endblock javascripts %}

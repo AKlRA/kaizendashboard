@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     'kaizen_app',
     'rest_framework',
     'corsheaders',    
@@ -102,7 +103,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'kaiznen_app', 'template,', 'kaizen_app/templates'),
+            os.path.join(BASE_DIR, 'kaiznen_app', 'template,',),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -124,11 +125,11 @@ WSGI_APPLICATION = 'kaizen_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'kaizen_db'),
-        'USER': os.getenv('DB_USER', 'kaizen_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'your_password'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
+        'NAME': 'kaizen_db',
+        'USER': 'kaizen_user',  # Make sure this matches what you created
+        'PASSWORD': 'your_password',  # Use the password you set
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
