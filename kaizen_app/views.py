@@ -1209,6 +1209,20 @@ def save_kaizen_coordinators(request):
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
+    
+
+@login_required
+@profile_required('coordinator')
+@require_POST
+def delete_kaizen(request, kaizen_id):
+    try:
+        sheet = KaizenSheet.objects.get(id=kaizen_id)
+        sheet.delete()
+        return JsonResponse({'success': True})
+    except KaizenSheet.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Kaizen sheet not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required

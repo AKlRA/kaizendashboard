@@ -36,6 +36,7 @@ urlpatterns = [
     path('finance-approve-kaizen/<int:kaizen_id>/', views.finance_approve_kaizen, name='finance_approve_kaizen'),
     path('get-cost-details/<int:kaizen_id>/', views.get_cost_details, name='get_cost_details'),
     path('save-kaizen-coordinators/', views.save_kaizen_coordinators, name='save_kaizen_coordinators'),
+    path('delete-kaizen/<int:kaizen_id>/', views.delete_kaizen, name='delete_kaizen'),
     path('get-excel-template/<str:template_name>/', views.get_excel_template, name='get_excel_template'),
     path('get-department-data/<int:year>/<int:month>/', views.get_department_data, name='get_department_data'),
     path('reject-kaizen/<int:kaizen_id>/', views.reject_kaizen, name='reject_kaizen'),
